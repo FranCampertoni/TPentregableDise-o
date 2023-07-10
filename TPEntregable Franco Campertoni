@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TP ENTREGABLE FRANCO CAMPERTONI</title>
+    <style>
+        td {
+            width: 100px;
+            height: 25px;
+            border: 1px solid rgb(5, 8, 79);
+        }
+    </style>
+    <script>
+        const url = 'https://ca99-181-231-122-56.ngrok-free.app/student'
+
+        window.onload = function() {
+            getStudents()
+        }
+
+        function loadStudents() {
+            return new Promise(function (resolve, reject) {
+                var request = new XMLHttpRequest()
+                request.open('GET', url + '/getAll')
+                request.responseType = 'json'
+                request.onload = function () {
+                    if (request.status == 200) {
+                        resolve(request.response)
+                    } else {
+                        reject(Error(request.statusText))
+                    }
+                }
+                request.onerror = function () {
+                    reject(Error('Error: unexpected network error.'))
+                }
+                request.send()
+            });
+        }
+
+        function addStudent() {
+            return new Promise(function (resolve, reject) {
+                var request = new XMLHttpRequest()
+                request.open('POST', url)
+                request.setRequestHeader('Content-Type', 'application/json')
+                var student = JSON.stringify({
+                    'dni': document.getElementById('dni').value,
+                    'lastName': document.getElementById('lastName').value,
+                    'firstName': document.getElementById('firstName').value,
+                    'email': document.getElementById('email').value,
+                    'cohort': document.getElementById('cohort').value,
+                    'status': document.getElementById('status').value,
+                    'gender': document.getElementById('gender').value,
+                    'address': document.getElementById('address').value,
+                    'phone': document.getElementById('phone').value,
+                })
+                request.onload = function () {
+                    if (request.status == 201) {
+                        resolve(request.response)
+                    } else {
+                        reject(Error(request.statusText))
+                    }
+                }
+                request.onerror = function () {
+                    reject(Error('Error: unexpected network error.'))
+                }
+                request.send(student)
+            });
+        }
+
+        function removeStudent(Id) {
+            return new Promise(function (resolve, reject) {
+                var request = new XMLHttpRequest()
+                request.open('POST', url + `/${Id}/delete`)
+                request.setRequestHeader('Content-Type', 'application/json')
+                request.onload = function () {
+                    if (request.status == 200) {
+                        resolve(request.response)
+                    } else {
+                        reject(Error(request.statusText))
+                    }
+                }
+                request.onerror = function () {
+                    reject(Error('Error: unexpected network error.'))
+                }
+                request.send()
+            })
+        }
+
+        function modifyStudent() {
+            return new Promise(function(resolve, reject) {
+                var request = new XMLHttpRequest()
+                request.open('POST', url + `/${document.getElementByName('id2')[0].value}/update`)
+                request.setRequestHeader('Content-Type', 'application/json')
+                var student = JSON.stringify({
+                    'dni': document.getElementByName('dni2').value,
+                    'lastName': document.getElementByName('lastName2').value,
+                    'firstName': document.getElementByName('firstName2').value,
+                    'email': document.getElementByName('email2').value,
+                    'cohort': document.getElementById('cohort2').value,
+                    'status': document.getElementById('status2').value,
+                    'gender': document.getElementById('gender2').value,
+                    'address': document.getElementById('address2').value,
+                    'phone': document.getElementById('phone2').value
+                })
+                request.onload = function() {
+                    if (request.status == 200) {
+                        resolve(request.response)
+                    } else {
+                        reject(Error(request.statusText))
+                    }
+                }
+                request.onerror = function() {
+                    reject(Error('Error: unexpected network error.'))
+                }
+                request.send(student)
+            })
+        }
+
+        function getStudents() {
+            loadStudents().then(response => {
+                var tbody = document.getElementById('tabla')
+                tbody.innerHTML = ''
+                let total = 0
+                response.forEach(e => {
+                    var row = tbody.insertRow()
+                    var id = row.insertCell()
+                    id.innerHTML = e.id
+                    var dni = row.insertCell()
+                    dni.innerHTML = e.dni
+                    var lastName = row.insertCell()
+                    lastName.innerHTML = e.lastName
+                    var firstName = row.insertCell()
+                    firstName.innerHTML = e.firstName
+                    var email = row.insertCell()
+                    email.innerHTML = e.email
+
+                    var student = JSON.stringify({
+                        'id': e.id,
+                        'dni': e.dni,
+                        'lastName': e.lastName,
+                        'firstName': e.firstName,
+                        'cohort': e.cohort,
+                        'address': e.address,
+                        'status': e.status,
+                        'gender': e.gender,
+                        'phone': e.phone,
+                    })
+                    document.getElementById('totalEstudiantes').innerHTML = `Cantidad total de estudiantes: ${total}`
+                    var view = row.insertCell()
+                    view.innerHTML = `<button onclick="viewStudent(${student})">View</button>`
+                    var del = row.insertCell()
+                    del.innerHTML = `<button onclick="deleteStudent(${e.id})">Delete</button>`
+                })
+
+            }).catch(reason => {
+                console.error(reason)
+            })
+        }
+
+        function saveStudent() {
+            addStudent().then(() => {
+                document.getElementById('dni').value = ''
+                document.getElementById('lastName').value = ''
+                document.getElementById('firstName').value = ''
+                document.getElementById('email').value = ''
+                document.getElementById('cohort').value = ''
+                document.getElementById('status').value = ''
+                document.getElementById('gender').value = ''
+                document.getElementById('address').value = ''
+                document.getElementById('phone').value = ''
+
+                getStudents()
+            }).catch(reason => {
+                console.error(reason)
+            })
+        }
+
+        function viewStudent(student) {
+            document.getElementsByName('id2').value = student.id
+            document.getElementsByName('dni2').value = student.dni
+            document.getElementsByName('lastName2').value = student.lastName
+            document.getElementsByName('firstName2').value = student.firstName
+            document.getElementsByName('email2').value = student.email
+            document.getElementById('cohort2').value = student.cohort
+            document.getElementById('status2').value = student.status
+            document.getElementById('address2').value = student.address
+            document.getElementById('gender2').value = student.gender
+        }
+
+        function deleteStudent(id) {
+            removeStudent(id).then(() => {
+                getStudents()
+            }).catch(reason => {
+                console.error(reason)
+            })
+        }
+
+        function updateStudent() {
+            modifyStudent().then(() => {
+                document.getElementById('id2').value = ''
+                document.getElementById('dni2').value = ''
+                document.getElementById('lastName2').value = ''
+                document.getElementById('firstName2').value = ''
+                document.getElementById('email2').value = ''
+                document.getElementById('cohort2').value = ''
+                document.getElementById('status2').value = ''
+                document.getElementById('gender2').value = ''
+                document.getElementById('address2').value = ''
+                document.getElementById('phone2').value = ''
+                getStudents()
+            }).catch(reason => {
+                console.error(reason)
+            })
+        }
+    </script>
+</head>
+<body>
+        <tfoot>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align: center;">dni</th>
+                        <th style="text-align: center;">apellido</th>
+                        <th style="text-align: center;">nombre</th>
+                        <th style="text-align: center;">email</th>
+                    </tr>
+                </thead>  
+                <tr>
+                    <td><input id="dni"></td>
+                    <td><input id="apellido"></td>
+                    <td><input id="nombre"></td>
+                    <td><input id="email"></td>
+                    <td><button onclick="saveStudent()">add student</button></tr>
+                </tr>
+            </table>
+           
+        </tfoot>
+
+        <div id=>
+            <h3>Update Student</h3>
+            <table>
+                <tr>
+                    <td><label for='id2' style='font-weight: bold'>Id</label></td>
+                    <td><input name='id2' style='text-align: right' readonly /></td>
+                </tr>
+                <tr>
+                    <td><label for='dni2' style='font-weight: bold'>Dni</label></td>
+                    <td><input name='dni2' style='text-align: right' /></td>
+                </tr>
+                <tr>
+                    <td><label for='lastName2' style='font-weight: bold'>Last Name</label></td>
+                    <td><input name='lastName2' style='text-align: right' /></td>
+                </tr>
+                <tr>
+                    <td><label for='firstName2' style='font-weight: bold'>First Name</label></td>
+                    <td><input name='firstName2' style='text-align: right' /></td>
+                </tr>
+                <tr>
+                    <td><label for='email2' style='font-weight: bold'>Email</label></td>
+                    <td><input name='email2' style='text-align: right' /></td>
+                </tr>
+                <tr>
+                    <td colspan='2' style='text-align: center'><button onclick='updateStudent()'>Update</button></td>
+                </tr>
+            </table>
+            
+        </div>
+    
+        <div class="section">
+            <h3>Modify Student</h3>
+            <table>
+                <tr>
+                    <td><label for="id2">Id:</label></td>
+                    <td><input type="text" readonly id="id2"></td>
+                </tr>
+                <tr>
+                    <td><label for="dni2">DNI:</label></td>
+                    <td><input type="text" id="dni2"></td>
+                </tr>
+                <tr>
+                    <td><label for="firstName2">Name:</label></td>
+                    <td><input type="text" id="firstName2"></td>
+                </tr>
+                <tr>
+                    <td><label for="lastName2">Lastname:</label></td>
+                    <td><input type="text" id="lastName2"></td>
+                </tr>
+                <tr>
+                    <td><label for="email2">Email:</label></td>
+                    <td><input type="text" id="email2"></td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center">
+                        <button onclick="updateStudent()">Modify Student</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        
+        
+        <h3 id="totalEstudiantes"></h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>DNI</th>
+                    <th>ApellIdo</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody Id="tabla"></tbody>
+        </table>
+    </body>
+    
+</html>
