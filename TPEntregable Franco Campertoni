@@ -1,20 +1,58 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>TP ENTREGABLE FRANCO CAMPERTONI</title>
+    <title>Trabajo Práctico Diseño Web</title>
     <style>
         td {
-            width: 100px;
-            height: 25px;
-            border: 1px solid rgb(5, 8, 79);
+        width: 100px;
+        height: 25px;
+        border: 1px solid rgb(39, 8, 106);
         }
+        body {
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+    
+        h3 {
+            color: #007bff;
+        }
+
+    
+        label {
+            color: #555;
+        }
+    
+        input[type="text"] {
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+    
+        button {
+            background-color: #28a745;
+            color: #fff;
+            padding: 8px 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+    
+        button:hover {
+            background-color: #218838;
+        }
+                        
     </style>
     <script>
-        const url = 'https://ca99-181-231-122-56.ngrok-free.app/student'
+        const url = 'https://3f09-181-231-122-56.ngrok-free.app/student'
 
-        window.onload = function() {
+        window.onload = function () {
             getStudents()
         }
+
+        // PROMESAS//
 
         function loadStudents() {
             return new Promise(function (resolve, reject) {
@@ -32,7 +70,7 @@
                     reject(Error('Error: unexpected network error.'))
                 }
                 request.send()
-            });
+            })
         }
 
         function addStudent() {
@@ -62,7 +100,7 @@
                     reject(Error('Error: unexpected network error.'))
                 }
                 request.send(student)
-            });
+            })
         }
 
         function removeStudent(Id) {
@@ -85,34 +123,36 @@
         }
 
         function modifyStudent() {
-            return new Promise(function(resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 var request = new XMLHttpRequest()
-                request.open('POST', url + `/${document.getElementByName('id2')[0].value}/update`)
+                request.open('POST', url + `/${document.getElementById('id2').value}/update`)
                 request.setRequestHeader('Content-Type', 'application/json')
                 var student = JSON.stringify({
-                    'dni': document.getElementByName('dni2').value,
-                    'lastName': document.getElementByName('lastName2').value,
-                    'firstName': document.getElementByName('firstName2').value,
-                    'email': document.getElementByName('email2').value,
+                    'dni': document.getElementById('dni2').value,
+                    'lastName': document.getElementById('lastName2').value,
+                    'firstName': document.getElementById('firstName2').value,
+                    'email': document.getElementById('email2').value,
                     'cohort': document.getElementById('cohort2').value,
                     'status': document.getElementById('status2').value,
                     'gender': document.getElementById('gender2').value,
                     'address': document.getElementById('address2').value,
                     'phone': document.getElementById('phone2').value
                 })
-                request.onload = function() {
+                request.onload = function () {
                     if (request.status == 200) {
                         resolve(request.response)
                     } else {
                         reject(Error(request.statusText))
                     }
                 }
-                request.onerror = function() {
+                request.onerror = function () {
                     reject(Error('Error: unexpected network error.'))
                 }
                 request.send(student)
             })
         }
+
+        //FUNCIONES QUE CONSUMEN LAS PROMESAS//
 
         function getStudents() {
             loadStudents().then(response => {
@@ -120,9 +160,10 @@
                 tbody.innerHTML = ''
                 let total = 0
                 response.forEach(e => {
+                    total++
                     var row = tbody.insertRow()
-                    var id = row.insertCell()
-                    id.innerHTML = e.id
+                    var Id = row.insertCell()
+                    Id.innerHTML = e.id
                     var dni = row.insertCell()
                     dni.innerHTML = e.dni
                     var lastName = row.insertCell()
@@ -143,11 +184,12 @@
                         'gender': e.gender,
                         'phone': e.phone,
                     })
+
                     document.getElementById('totalEstudiantes').innerHTML = `Cantidad total de estudiantes: ${total}`
                     var view = row.insertCell()
-                    view.innerHTML = `<button onclick="viewStudent(${student})">View</button>`
+                    view.innerHTML = `<button onclick='viewStudent(${student})'>Ver</button>`
                     var del = row.insertCell()
-                    del.innerHTML = `<button onclick="deleteStudent(${e.id})">Delete</button>`
+                    del.innerHTML = `<button onclick='deleteStudent(${e.id})'>Eliminar</button>`
                 })
 
             }).catch(reason => {
@@ -171,14 +213,15 @@
             }).catch(reason => {
                 console.error(reason)
             })
+
         }
 
         function viewStudent(student) {
-            document.getElementsByName('id2').value = student.id
-            document.getElementsByName('dni2').value = student.dni
-            document.getElementsByName('lastName2').value = student.lastName
-            document.getElementsByName('firstName2').value = student.firstName
-            document.getElementsByName('email2').value = student.email
+            document.getElementById('id2').value = student.id
+            document.getElementById('dni2').value = student.dni
+            document.getElementById('firstName2').value = student.firstName
+            document.getElementById('lastName2').value = student.lastName
+            document.getElementById('email2').value = student.email
             document.getElementById('cohort2').value = student.cohort
             document.getElementById('status2').value = student.status
             document.getElementById('address2').value = student.address
@@ -212,104 +255,89 @@
         }
     </script>
 </head>
-<body>
-        <tfoot>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="text-align: center;">dni</th>
-                        <th style="text-align: center;">apellido</th>
-                        <th style="text-align: center;">nombre</th>
-                        <th style="text-align: center;">email</th>
-                    </tr>
-                </thead>  
-                <tr>
-                    <td><input id="dni"></td>
-                    <td><input id="apellido"></td>
-                    <td><input id="nombre"></td>
-                    <td><input id="email"></td>
-                    <td><button onclick="saveStudent()">add student</button></tr>
-                </tr>
-            </table>
-           
-        </tfoot>
 
-        <div id=>
-            <h3>Update Student</h3>
-            <table>
-                <tr>
-                    <td><label for='id2' style='font-weight: bold'>Id</label></td>
-                    <td><input name='id2' style='text-align: right' readonly /></td>
-                </tr>
-                <tr>
-                    <td><label for='dni2' style='font-weight: bold'>Dni</label></td>
-                    <td><input name='dni2' style='text-align: right' /></td>
-                </tr>
-                <tr>
-                    <td><label for='lastName2' style='font-weight: bold'>Last Name</label></td>
-                    <td><input name='lastName2' style='text-align: right' /></td>
-                </tr>
-                <tr>
-                    <td><label for='firstName2' style='font-weight: bold'>First Name</label></td>
-                    <td><input name='firstName2' style='text-align: right' /></td>
-                </tr>
-                <tr>
-                    <td><label for='email2' style='font-weight: bold'>Email</label></td>
-                    <td><input name='email2' style='text-align: right' /></td>
-                </tr>
-                <tr>
-                    <td colspan='2' style='text-align: center'><button onclick='updateStudent()'>Update</button></td>
-                </tr>
-            </table>
-            
-        </div>
+<body style="background-color: #f5f5f5; font-family: Arial, sans-serif; color: #333;">
+    <h3 style="color: #0099cc; font-size: 28px; text-decoration: none; text-align: center;">Crea, modifica y elimina estudiantes de la tabla a tu gusto!</h3>
+    <h3 style="color: #007bff;">Crear estudiantes</h3>
+    <label for="dni" style="color: #555;">DNI: </label>
+    <input type="text" id="dni">
+    <br>
+    <label for="firstName" style="color: #555;">Nombre: </label>
+    <input type="text" id="firstName">
+    <br>
+    <label for="lastName" style="color: #555;">Apellido: </label>
+    <input type="text" id="lastName">
+    <br>
+    <label for="email" style="color: #555;">Correo electrónico: </label>
+    <input type="text" id="email">
+    <br>
+    <label for="cohort" style="color: #555;">Cohorte: </label>
+    <input type="text" id="cohort">
+    <br>
+    <label for="phone" style="color: #555;">Teléfono: </label>
+    <input type="text" id="phone">
+    <br>
+    <label for="status" style="color: #555;">Estado: </label>
+    <input type="text" id="status">
+    <br>
+    <label for="address" style="color: #555;">Dirección: </label>
+    <input type="text" id="address">
+    <br>
+    <label for="gender" style="color: #555;">Género: </label>
+    <input type="text" id="gender">
+    <br>
+    <button onclick="saveStudent()" style="background-color: #28a745; color: #fff; padding: 8px 16px; border: none; cursor: pointer; border-radius: 4px;">Crear estudiante</button>
+
     
-        <div class="section">
-            <h3>Modify Student</h3>
-            <table>
-                <tr>
-                    <td><label for="id2">Id:</label></td>
-                    <td><input type="text" readonly id="id2"></td>
-                </tr>
-                <tr>
-                    <td><label for="dni2">DNI:</label></td>
-                    <td><input type="text" id="dni2"></td>
-                </tr>
-                <tr>
-                    <td><label for="firstName2">Name:</label></td>
-                    <td><input type="text" id="firstName2"></td>
-                </tr>
-                <tr>
-                    <td><label for="lastName2">Lastname:</label></td>
-                    <td><input type="text" id="lastName2"></td>
-                </tr>
-                <tr>
-                    <td><label for="email2">Email:</label></td>
-                    <td><input type="text" id="email2"></td>
-                </tr>
-                <tr>
-                    <td colspan="2" style="text-align: center">
-                        <button onclick="updateStudent()">Modify Student</button>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        
-        
-        <h3 id="totalEstudiantes"></h3>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Id</th>
-                    <th>DNI</th>
-                    <th>ApellIdo</th>
-                    <th>Nombre</th>
-                    <th>Email</th>
-                </tr>
-            </thead>
-            <tbody Id="tabla"></tbody>
-        </table>
-    </body>
+    <title>Modificar estudiantes</title>
+
+    <h3>Modificar estudiantes</h3>
+    <label for="id2">Id: </label>
+    <input type="text" readonly id="id2">
+    <br>
+    <label for="dni2">DNI: </label>
+    <input type="text" id="dni2">
+    <br>
+    <label for="firstName2">Nombre: </label>
+    <input type="text" id="firstName2">
+    <br>
+    <label for="lastName2">Apellido: </label>
+    <input type="text" id="lastName2">
+    <br>
+    <label for="email2">Correo electrónico: </label>
+    <input type="text" id="email2">
+    <br>
+    <label for="cohort2">Cohorte: </label>
+    <input type="text" id="cohort2">
+    <br>
+    <label for="phone2">Teléfono: </label>
+    <input type="text" id="phone2">
+    <br>
+    <label for="status2">Estado: </label>
+    <input type="text" id="status2">
+    <br>
+    <label for="address2">Dirección: </label>
+    <input type="text" id="address2">
+    <br>
+    <label for="gender2">Género: </label>
+    <input type="text" id="gender2">
+    <br>
+    <button onclick="updateStudent()">Modificar estudiante</button>
     
+    <h3 id="totalEstudiantes"><h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>DNI</th>
+                <th>ApellIdo</th>
+                <th>Nombre</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody Id="tabla"></tbody>
+    </table>
+</body>
+
 </html>
